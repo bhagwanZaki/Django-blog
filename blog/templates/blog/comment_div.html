@@ -1,0 +1,15 @@
+<li>
+    <!-- Each comment -->
+    {%for comment in post.comments.all %}
+    <div class="comment-list">
+        <div class=" ">
+            <img src="{{ comment.user.profile.image.url}}" class="rounded-circle comment-img" alt=""/>
+        </div>
+        <div class="comment">
+            <h3><a href="{% url 'user-posts' comment.user.username %}">{{ comment.user }}</a></h3>
+            <span><img src="clock.png" alt=""/>{{ comment.date_posted|date:"F d, Y" }}</span>
+            <p>{{comment.body}}</p>
+        </div>
+    </div>
+    {% endfor %}
+</li>

@@ -1,15 +1,18 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from .models import Post
+from.forms import *
 from django.views.generic import ListView, DetailView, CreateView, UpdateView , DeleteView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin , UserPassesTestMixin
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect, request
+from django.http import HttpResponseRedirect, request,HttpResponse,JsonResponse
 from django.urls import reverse
+import json
 # Create your views here.
 def home(request):
     context ={
-        'posts' : Post.objects.all()
+        'posts' : Post.objects.all(),
+        'comment_form' : CommentForm()
     }
     return render(request, 'blog/home.html', context)
 
@@ -20,22 +23,29 @@ class PostListView(ListView):
     context_object_name='posts'
     ordering=['-date_posted']
     paginate_by = 10
-    # def get_context_data(self, **kwargs):
-    #     posts = get_object_or_404(Post,id=self.kwargs['pk'])
-    #     total_like = posts.num_likes()
-    #     context = super().get_context_data(**kwargs)
-    #     context['total_like'] = total_like
+    def get_context_data(self, **kwargs):
+        # posts = get_object_or_404(Post,id=self.kwargs['pk'])
+        # total_like = posts.num_likes()
+        context = super().get_context_data(**kwargs)
+        context['comment_form'] = CommentForm()
         
-    #     return context
+        return context
 
 
 class UserPostListView(ListView):
     model = Post
-    template_name='blog/user_posts.html'
+    template_name='blog/home.html'
     context_object_name='posts'
     
     paginate_by = 10
-
+    
+    def get_context_data(self, **kwargs):
+        # posts = get_object_or_404(Post,id=self.kwargs['pk'])
+        # total_like = posts.num_likes()
+        context = super().get_context_data(**kwargs)
+        context['comment_form'] = CommentForm()
+        
+        return context
     def get_queryset(self):
         user = get_object_or_404(User, username=self.kwargs.get('username'))
         return Post.objects.filter(author=user).order_by('-date_posted')
@@ -58,7 +68,7 @@ class PostDetailView(DetailView):
 
 class PostCreateView(LoginRequiredMixin,CreateView):
     model = Post
-    fields = ['title','content']
+    fields = ['title','content','images']
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -67,7 +77,8 @@ class PostCreateView(LoginRequiredMixin,CreateView):
 
 class PostUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
     model = Post
-    fields = ['title','content']
+    template_name  = 'blog/post_edit.html'
+    fields = ['title','content','images']
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -117,3 +128,26 @@ def like_main_post(request, pk):
         post.like.add(request.user)
     
     return HttpResponseRedirect(reverse('blog-home')) 
+
+def add_comment(request):
+    post = get_object_or_404(Post, id=request.POST.get('comment_id'))
+    if request.method == "POST":
+        form  = CommentForm(request.POST,request.FILES)
+        if form.is_valid():
+            comment = Comment(post=post,user=request.user,body=form.cleaned_data['body'])
+            comment.save()
+    
+            # new = list(comme)[-1]
+
+            # print(comment.body)
+            # return render(request,'blog/comment_div.html',{'comment':comment}) #{'comment':new}
+            # return JsonResponse(comment, safe=False)
+            # return JsonResponse({"models_to_return": comment})
+            # data = serializers.serialize('json', self.get_queryset())
+            # return HttpResponse(data, content_type="application/json")
+        return HttpResponse(comment,content_type="application/json")
+            
+        
+        pass
+    pass
+    

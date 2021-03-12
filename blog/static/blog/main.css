@@ -1,8 +1,8 @@
 body {
-background: #fafafa;
-color: #333333;
-margin-top: 5rem;
-scroll-behavior: smooth;
+    background: #fafafa;
+    color: #333333;
+    margin-top: 5rem;
+    scroll-behavior: smooth;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -14,7 +14,7 @@ margin: 0;
 }
 
 .bg-steel {
-background-color: #5f788a;
+background-color: #1f1f1f;
 }
 
 .site-header .navbar-nav .nav-link {
@@ -34,7 +34,8 @@ background: #ffffff;
 padding: 10px 20px;
 border: 1px solid #dddddd;
 border-radius: 3px;
-margin-bottom: 20px;
+margin-bottom: 5px;
+margin-top: 50px;
 }
 
 .article-title {
@@ -44,16 +45,31 @@ color: #444444;
 a.article-title:hover {
 color: #428bca;
 text-decoration: none;
-}
+} 
 
 .article-content {
 white-space: pre-line;
+font-size:2em;
 }
 
 .article-img {
 height: 65px;
 width: 65px;
 margin-right: 16px;
+}
+
+.comment-img {
+height: 21px;
+width: 55px;
+margin-right: 16px;
+}
+
+.user-img {
+/* height: 95px;
+width: 95px; */
+height: 100%;
+width: 100%;
+margin-right: 36px;
 }
 
 .article-metadata {
@@ -82,4 +98,28 @@ margin-bottom: 16px;
 
 .account-heading {
 font-size: 2.5rem;
+}
+
+.images{
+    width: 50%;
+}
+
+.edit{
+    right: 0 !important;
+    top: 0 !important;
+    position: absolute !important;
+}
+
+#id_body{
+    width: 372px;
+    height: 40px;
+    border: 1px solid #e5e5e5;
+    background-color: #efefef;
+    padding-left: 10px;
+    color: #b2b2b2;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 40px;
+    resize: none;
+
 }

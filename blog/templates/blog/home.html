@@ -1,50 +1,198 @@
 {% extends "blog/base.html" %}
+{% load static %}
 {% block content %}
+<div class="posts-section ">
     {% for post in posts%}
-    <article class="media content-section">
-        <img src="{{ post.author.profile.image.url}}" class="rounded-circle article-img">
-        <div class="media-body">
-            <div class="article-metadata">
-                <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
-                <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
+        <div class="posty content-section">
+            <div class="post-bar">
+                <div class="post_topbar">
+                    <div class="usy-dt">
+                        <!-- user img -->
+                    <img class="rounded-circle article-img" src="{{ post.author.profile.image.url}}" alt=""/>
+                    <div class="usy-name">
+                        <!-- user name -->
+                        <h3><a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a></h3>
+                        <!-- clk img -->
+                        <span><img src="clock.png" alt=""/>{{ post.date_posted|date:"F d, Y" }}</span>
+                    </div>
+                    </div>
+                    <!-- dropdown -->
+                    {% if post.author == user %}
+                    <div class="dropdown edit">
+                        <button class="btn btn-secondary " type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="{% url 'post-update' post.id %}">Edit</a>
+                        <a class="dropdown-item" href="{% url 'post-delete' post.id %}">Delete</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-          <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>
-          <p class="article-content">{{ post.content }}</p>
-          <form action="{% url 'like_main_post' post.id %}" method="POST">
-              <!-- {{ user.username}}
-            {{post.like.all}}
-            {% if user  in post.like.all %}
-            you are caputered
-            {% endif %} -->
-            {% csrf_token %}
-                {% if user not in post.like.all %}
-                    <button type="submit" class="btn btn-primary" name="post_id" value="{{ post.id }}">Likes</button> - {{ post.like.all.count }} Likes  
-                {% else %}
-                    <button type="submit" class="btn btn-danger" name="post_id" value="{{ post.id }}">UnLikes</button> - {{ post.like.all.count }} Likes  
+            <div class="job_descp">
+                {% if post.images %}
+                <div class="row">
+                    <div class="col-3"></div>
+                    <img class="images"  src="{{ post.images.url }}">                            
+                </div>
                 {% endif %}
-                
-           </form>
+                <br>
+                <p>
+                {{post.content}}                        
+                </p>
+
+            </div>
+            <div class="job-status-bar">
+                <ul class="like-com">
+                <li>
+                    <form action="{% url 'like_main_post' post.id %}" method="POST">
+                        {% csrf_token %}
+                            {% if user not in post.like.all %}
+                                <button type="submit"  name="post_id" value="{{ post.id }}"><i class="fas fa-heart"></i> Like</button>   <img src="liked-img.png" alt=""/><span>{{ post.like.all.count }} </span>
+                            {% else %}
+                                <button type="submit"  name="post_id" value="{{ post.id }}"><i class="fas fa-heart "></i> Like</button>  <img src="liked-img.png" alt=""/><span>{{ post.like.all.count }}  </span>
+                            {% endif %}
+                    </form>
+                </li>
+                <li>
+                    <button id="{{forloop.counter}}" class="com" onclick="showComment(this.id)"> <i class="fas fa-comment-alt"></i> Comment {{post.comments.all.count}}</button>
+                    <!-- <a href="" class="com"><i class="fas fa-comment-alt"></i> Comment {{post.comments.all.count}}</a> -->
+                </li>
+                </ul>
+            </div>
         </div>
-    </article>
+        <div class="comment-section" id="comment{{forloop.counter}}" style="display: none;">
+            <div class="comment-sec" >
+                <ul id="add">
+                <li>
+                    <!-- Each comment -->
+                    {%for comment in post.comments.all %}
+                    <div class="comment-list">
+                        <div class=" ">
+                            <img src="{{ comment.user.profile.image.url}}" class="rounded-circle comment-img" alt=""/>
+                        </div>
+                        <div class="comment">
+                            <h3><a href="{% url 'user-posts' comment.user.username %}">{{ comment.user }}</a></h3>
+                            <span><img src="clock.png" alt=""/>{{ comment.date_posted|date:"F d, Y" }}</span>
+                            <p>{{comment.body}}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </li>
+
+                </ul>
+            </div>
+            <!-- comment box -->
+            <div class="post-comment">
+                <div class="cm_img">
+                <img src="bg-img4.png"alt=""/>
+                </div>
+                <div class="comment_box">
+                    <!-- action="{% url 'comments' %}" -->
+                    <form id="comment_sec" action="{% url 'comments' %}" method="POST">
+                        {% csrf_token %}
+                        {{ comment_form.body }}
+                        <button type="submit" name="comment_id" value="{{ post.id }}">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     {% endfor %}
-    {% if is_paginated %}
-        {% if page_obj.has_previous %}
-            <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
-            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number}}"><</a>
-        {% endif%}
+</div>
+{% if is_paginated %}
+    {% if page_obj.has_previous %}
+        <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number}}"><</a>
+    {% endif%}
 
-        {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-                <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
-            {% endif %}
-        {% endfor %}
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
 
-        {% if page_obj.has_next %}
-            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">></a>
-            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-        {% endif%}
+    {% if page_obj.has_next %}
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">></a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+    {% endif%}
 
-    {% endif %}
+{% endif %}
 {% endblock content %}
+{% block js%}
+    <script>
+        function showComment(button_id) {
+            var x = document.getElementById("comment"+button_id);
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+        
+        $('#comment_sec' ).submit(function(e){
+        e.preventDefault();
+        var url = "/create/comment/"
+        $.ajax({
+            headers: { "X-CSRFToken": $.cookie("csrftoken") },
+            type:'POST',
+            url: url,  // make sure , you are calling currect url
+            data:$(this).serialize(),
+            success:function(json){              
+            alert(json.message); 
+            if(json.status==200){
+                var comment = json.comment;
+                var user = json.user;
+                /// set `comment` and `user` using jquery to some element
+            }             
+            },
+            error:function(response){
+            alert("some error occured. see console for detail");
+            }
+        });
+        });
+        // $(document).ready(function(){
+        //     $("#comment_sec").submit(function(e){
+        //         e.preventDefault();
+        //         $.ajax({
+        //             headers: { "X-CSRFToken": $.cookie("csrftoken") },
+        //         type:'POST',
+        //         url:"create/comment/",  // make sure , you are calling currect url
+        //         data:$(this).serialize(),
+        //         success:function(json){              
+        //         alert(json.message); 
+        //         if(json.status==200){
+        //             var comment = json.comment;
+        //             var user = json.user;
+        //             /// set `comment` and `user` using jquery to some element
+        //         }             
+        //         },
+        //         error:function(response){
+        //         alert("some error occured. see console for detail");
+        //         }
+        //         });
+        //         return false;
+        //     });
+        // });
+
+        // $('#form').submit(function(e){
+        //     $.post('/comment/', $(this).serialize(), function(data){
+        //     console.log(html(data.message));
+        //     // of course you can do something more fancy with your respone
+        //     });
+        //     e.preventDefault();
+        // });
+        // $('#comment_id').click(function() {
+        //     $.ajax({
+        //         headers: { "X-CSRFToken": $.cookie("csrftoken") },
+        //         type: 'POST',
+        //         url: '/comment',
+        //     });                                                                                                                      xc                                                     `                                                                                                                                                                                                     `
+        // });
+    </script>
+{% endblock js%}
+
+<!-- Modal -->
+
