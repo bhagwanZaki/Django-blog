@@ -7,8 +7,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin , UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, request,HttpResponse,JsonResponse
 from django.urls import reverse
-import json
+try:
+    from django.utils import simplejson as json
+except ImportError:
+    import json
 # Create your views here.
+def mainpage(request):
+    return render(request,'blog/mainpage.html')
+
 def home(request):
     context ={
         'posts' : Post.objects.all(),
@@ -34,7 +40,7 @@ class PostListView(ListView):
 
 class UserPostListView(ListView):
     model = Post
-    template_name='blog/home.html'
+    template_name='blog/user_posts.html'
     context_object_name='posts'
     
     paginate_by = 10
@@ -43,6 +49,7 @@ class UserPostListView(ListView):
         # posts = get_object_or_404(Post,id=self.kwargs['pk'])
         # total_like = posts.num_likes()
         context = super().get_context_data(**kwargs)
+        context['user'] = get_object_or_404(User, username=self.kwargs.get('username'))
         context['comment_form'] = CommentForm()
         
         return context
@@ -62,6 +69,7 @@ class PostDetailView(DetailView):
             liked = False
         
         context = super().get_context_data(**kwargs)
+        context['comment_form'] = CommentForm()
         context['total_like'] = total_like
         context['liked'] = liked
         return context
@@ -118,36 +126,38 @@ def like_post(request, pk):
     return HttpResponseRedirect(reverse('post-detail', args=[str(pk)])) 
 
 @login_required
-def like_main_post(request, pk):
-    post = get_object_or_404(Post, id=request.POST.get('post_id'))
-
-# unlike and like condition
+def like_main_post(request):
+    print(request.POST.get('id'))
+    post = get_object_or_404(Post, id=request.POST.get('id'))
+    is_like = False
     if post.like.filter(id=request.user.id).exists():
         post.like.remove(request.user)
+        is_like = False
     else:
+        is_like = True
         post.like.add(request.user)
     
-    return HttpResponseRedirect(reverse('blog-home')) 
+    # return HttpResponseRedirect(reverse('blog-home')) 
+    context = {
+        'likes_count':post.like.count(),
+        'is_like':is_like,
+    }
+    return HttpResponse(json.dumps(context), content_type='application/json')
 
 def add_comment(request):
-    post = get_object_or_404(Post, id=request.POST.get('comment_id'))
+    post = get_object_or_404(Post, id=request.POST.get('post_id'))
     if request.method == "POST":
-        form  = CommentForm(request.POST,request.FILES)
-        if form.is_valid():
-            comment = Comment(post=post,user=request.user,body=form.cleaned_data['body'])
-            comment.save()
-    
-            # new = list(comme)[-1]
+        comment = Comment(post=post,user=request.user,body=request.POST.get('datas'))
+        comment.save()
+        context={
+            'username': request.user.username,
+            'body': request.POST.get('datas'),
+            'image':request.user.profile.image.url,
+            'date':str(comment.date_added),
+            'number_of_comments': Comment.objects.filter(post=post).all().count(),
+        }
 
-            # print(comment.body)
-            # return render(request,'blog/comment_div.html',{'comment':comment}) #{'comment':new}
-            # return JsonResponse(comment, safe=False)
-            # return JsonResponse({"models_to_return": comment})
-            # data = serializers.serialize('json', self.get_queryset())
-            # return HttpResponse(data, content_type="application/json")
-        return HttpResponse(comment,content_type="application/json")
+        return HttpResponse(json.dumps(context), content_type='application/json')
             
         
-        pass
-    pass
     

@@ -14,9 +14,17 @@ margin: 0;
 }
 
 .bg-steel {
-background-color: #1f1f1f;
+background-color: #236591;
 }
+.site-header{
+    margin-bottom: 50px;
+}
+.navbar{
+    border-radius: 50px !important;
+    /* background-color: #000a12 !important; */
 
+    margin: 0px 20px 60px;
+}
 .site-header .navbar-nav .nav-link {
 color: #cbd5db;
 }
@@ -35,7 +43,7 @@ padding: 10px 20px;
 border: 1px solid #dddddd;
 border-radius: 3px;
 margin-bottom: 5px;
-margin-top: 50px;
+/* margin-top: 50px; */
 }
 
 .article-title {

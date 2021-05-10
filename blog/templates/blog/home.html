@@ -46,35 +46,33 @@
             <div class="job-status-bar">
                 <ul class="like-com">
                 <li>
-                    <form action="{% url 'like_main_post' post.id %}" method="POST">
-                        {% csrf_token %}
+                  
                             {% if user not in post.like.all %}
-                                <button type="submit"  name="post_id" value="{{ post.id }}"><i class="fas fa-heart"></i> Like</button>   <img src="liked-img.png" alt=""/><span>{{ post.like.all.count }} </span>
+                        
+                                <button type="submit" class="like" id="like{{post.id}}" name="post_id" value="{{ post.id }}"><i class="fas fa-heart"></i> Like</button>   <img src="liked-img.png" alt=""/><span class="number_of_like{{post.id}}">{{ post.like.all.count }} </span>
                             {% else %}
-                                <button type="submit"  name="post_id" value="{{ post.id }}"><i class="fas fa-heart "></i> Like</button>  <img src="liked-img.png" alt=""/><span>{{ post.like.all.count }}  </span>
+                                <button type="submit" class="like active" id="like{{post.id}}"  name="post_id" value="{{ post.id }}"><i class="fas fa-heart"></i> Like</button>  <img src="liked-img.png" alt=""/><span class="number_of_like{{post.id}}">{{ post.like.all.count }}  </span>
                             {% endif %}
-                    </form>
                 </li>
                 <li>
-                    <button id="{{forloop.counter}}" class="com" onclick="showComment(this.id)"> <i class="fas fa-comment-alt"></i> Comment {{post.comments.all.count}}</button>
-                    <!-- <a href="" class="com"><i class="fas fa-comment-alt"></i> Comment {{post.comments.all.count}}</a> -->
+                    <button id="{{forloop.counter}}" class="com comment_text{{post.id}}" onclick="showComment(this.id)"> <i class="fas fa-comment-alt"></i>Comment {{post.comments.all.count}}</button>
                 </li>
                 </ul>
             </div>
         </div>
         <div class="comment-section" id="comment{{forloop.counter}}" style="display: none;">
             <div class="comment-sec" >
-                <ul id="add">
+                <ul id="add comment{{post.id}}">
                 <li>
                     <!-- Each comment -->
                     {%for comment in post.comments.all %}
-                    <div class="comment-list">
+                    <div class="comment-list" >
                         <div class=" ">
                             <img src="{{ comment.user.profile.image.url}}" class="rounded-circle comment-img" alt=""/>
                         </div>
                         <div class="comment">
                             <h3><a href="{% url 'user-posts' comment.user.username %}">{{ comment.user }}</a></h3>
-                            <span><img src="clock.png" alt=""/>{{ comment.date_posted|date:"F d, Y" }}</span>
+                            <span><img src="clock.png" alt=""/>{{ comment.date_added|date:"F d, Y" }}</span>
                             <p>{{comment.body}}</p>
                         </div>
                     </div>
@@ -90,11 +88,14 @@
                 </div>
                 <div class="comment_box">
                     <!-- action="{% url 'comments' %}" -->
-                    <form id="comment_sec" action="{% url 'comments' %}" method="POST">
-                        {% csrf_token %}
-                        {{ comment_form.body }}
-                        <button type="submit" name="comment_id" value="{{ post.id }}">Submit</button>
-                    </form>
+                    <div id="comment_sec">
+                        <form action="{% url 'comments' %}" method="POST" id="comment_form" data-attr="{{post.id}}">
+                            <!-- {% csrf_token %}
+                            {{ comment_form.body }} -->
+                            <input id="id_body" type="text" placeholder="Comment">
+                            <button id="comment-button" type="submit" name="comment_id" value="{{ post.id }}">Submit</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -122,7 +123,35 @@
 {% endif %}
 {% endblock content %}
 {% block js%}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous"></script>
     <script>
+        $('.like').click(function(){
+            var id = $(this).attr('value')
+            $.ajax({
+                    type: "POST",
+                    url: "{% url 'like_main_post' %}",
+                    data: {'id': id,'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                    dataType: "json",
+                    success: function(response) {
+                        console.log("yeahhh")
+                        if(response.is_like){
+                            console.log(id);
+                            $('#like'+id).addClass("active");
+                            $('.number_of_like'+id).text(response.likes_count);
+                        }else{
+                            // console.log($('#like'+id))
+                            $('#like'+id).removeClass("active");
+                            $('.number_of_like'+id).text(response.likes_count);
+                        }
+                            console.log('Company likes count is now ' + response.likes_count);
+                        },
+                        error: function(rs, e) {
+                            console.log(rs.responseText);
+                        }
+                }); 
+            })
+
         function showComment(button_id) {
             var x = document.getElementById("comment"+button_id);
             if (x.style.display === "none") {
@@ -132,67 +161,73 @@
             }
         }
         
-        $('#comment_sec' ).submit(function(e){
-        e.preventDefault();
-        var url = "/create/comment/"
-        $.ajax({
-            headers: { "X-CSRFToken": $.cookie("csrftoken") },
-            type:'POST',
-            url: url,  // make sure , you are calling currect url
-            data:$(this).serialize(),
-            success:function(json){              
-            alert(json.message); 
-            if(json.status==200){
-                var comment = json.comment;
-                var user = json.user;
-                /// set `comment` and `user` using jquery to some element
-            }             
-            },
-            error:function(response){
-            alert("some error occured. see console for detail");
-            }
-        });
-        });
-        // $(document).ready(function(){
-        //     $("#comment_sec").submit(function(e){
-        //         e.preventDefault();
-        //         $.ajax({
-        //             headers: { "X-CSRFToken": $.cookie("csrftoken") },
-        //         type:'POST',
-        //         url:"create/comment/",  // make sure , you are calling currect url
-        //         data:$(this).serialize(),
-        //         success:function(json){              
-        //         alert(json.message); 
-        //         if(json.status==200){
-        //             var comment = json.comment;
-        //             var user = json.user;
-        //             /// set `comment` and `user` using jquery to some element
-        //         }             
-        //         },
-        //         error:function(response){
-        //         alert("some error occured. see console for detail");
-        //         }
-        //         });
-        //         return false;
-        //     });
-        // });
+        $('#comment_form').submit(function(e){
+            e.preventDefault();
+            $.ajax({
+                type:"POST",
+                url: "{% url 'comments' %}",
+                data: {
+                    'post_id':$(e.target).data('attr'),
+                    'datas':$('#id_body').val(),
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                dataType: "json",
+                success: function(response) {
+                    addComment(response.username,response.image,response.body,response.date,$(e.target).data('attr'))
+                    $('#id_body').val('')
+                    $('.comment_text'+$(e.target).data('attr')).text('Comment '+response.number_of_comments)
+                    },
+                error: function(rs, e) {
+                    console.log(rs.responseText);
+                }
+            });
+        })
 
-        // $('#form').submit(function(e){
-        //     $.post('/comment/', $(this).serialize(), function(data){
-        //     console.log(html(data.message));
-        //     // of course you can do something more fancy with your respone
-        //     });
-        //     e.preventDefault();
-        // });
-        // $('#comment_id').click(function() {
-        //     $.ajax({
-        //         headers: { "X-CSRFToken": $.cookie("csrftoken") },
-        //         type: 'POST',
-        //         url: '/comment',
-        //     });                                                                                                                      xc                                                     `                                                                                                                                                                                                     `
-        // });
+        function addComment(username,image,body,postDate,id){
+            main = document.getElementById('add comment'+id)
+
+            var li = document.createElement('li');
+            var mainDiv = document.createElement('div');
+            mainDiv.classList.add('comment-list');
+            
+            var imgDiv = document.createElement('div');
+            var img = document.createElement('img');
+            img.setAttribute('src',image);
+            img.classList.add('rounded-circle');
+            img.classList.add('comment-img');
+            
+            imgDiv.appendChild(img);
+            
+            var cmdDiv = document.createElement('div');
+            cmdDiv.classList.add('comment');
+
+            var h3tag = document.createElement('h3')
+            var atag = document.createElement('a');
+            atag.href = '/user/'+username
+            atag.innerHTML = username
+
+            h3tag.appendChild(atag);
+
+            var spanTag = document.createElement('span')
+            let dt = moment(postDate, "YYYY-MM-DD");
+            
+            spanTag.innerHTML = dt.format('LL')
+
+            var pTag = document.createElement('p');
+            pTag.innerHTML = body
+
+            cmdDiv.appendChild(h3tag)
+            cmdDiv.appendChild(spanTag)
+            cmdDiv.appendChild(pTag)
+            
+            mainDiv.appendChild(imgDiv)
+            mainDiv.appendChild(cmdDiv)
+
+            li.appendChild(mainDiv)
+            main.appendChild(li)
+        }
     </script>
 {% endblock js%}
 
-<!-- Modal -->
+
 

@@ -103,7 +103,7 @@ img {
   transition: all 0.4s ease-in;
 }
 
-.comment_box form button,
+.comment_box .comment_sec button,
 .post-bar,
 .post_comment_sec form button,
 .posty {
@@ -337,7 +337,7 @@ img {
   margin-right: 15px;
 }
 
-.like-com li form button{
+.like-com li  button{
   color: #b2b2b2;
   background-color: #fff;
   font-size: 14px;
@@ -350,22 +350,22 @@ img {
   cursor: pointer;
 }
 
-.like-com li form button:hover {
+.like-com li button:hover {
   color: #e44d3a;
 }
 
-.like-com li form button.active {
+.like-com li  button.active {
   color: #e44d3a;
 }
 
-.like-com li form button i {
+.like-com li  button i {
   margin-right: 2px;
   font-size: 14px;
   position: relative;
   top: 2px;
 }
 
-.like-com li form span {
+.like-com li  span {
   color: #fff;
   font-size: 13px;
   width: 30px;
@@ -585,8 +585,11 @@ border: none ;
   line-height: 40px;
   resize: none;
 }
-
-.comment_box form button {
+.profile-img {
+  height: 28px;
+  width: 28px;
+}
+#comment-button {
   float: right;
   color: #fff;
   background-color: #e44d3a;

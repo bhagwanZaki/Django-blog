@@ -566,7 +566,7 @@
         margin-bottom: 10px
     }
 
-    .comment_box form button {
+    .comment_box .comment_sec button {
         float: none
     }
 
@@ -574,7 +574,7 @@
         text-align: center
     }
 
-    .comment_box form button {
+    .comment_box .comment_sec button {
         padding: 0 15px
     }
 

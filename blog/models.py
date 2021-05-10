@@ -30,13 +30,7 @@ Choices = (
     ('Unlike','Unlike')
 )
 
-class Likes(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    value = models.CharField(choices=Choices,default='Like',max_length=10)
 
-    def __str__(self):
-        return str(self.post)
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, related_name="comments", on_delete=models.CASCADE)

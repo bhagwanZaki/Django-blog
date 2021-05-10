@@ -10,6 +10,7 @@
                 <!-- {{form.title.label|striptags }} -->
                 {{form.title|as_crispy_field}}
                 {{form.content |as_crispy_field}}
+                {% if form.instance.image %}
                 <div class="row">
                     <div class="col-12">
                         Image
@@ -17,6 +18,7 @@
                     <div class="col-3"></div>
                     <img class="images" src="{{form.instance.images.url}}" />
                 </div>
+                {% endif %}
                 {{form.images|as_crispy_field}}
             </fieldset>
             <div class="form-group">

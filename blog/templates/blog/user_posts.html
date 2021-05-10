@@ -1,37 +1,247 @@
 {% extends "blog/base.html" %}
+{% load static %}
 {% block content %}
-    <h1 class="mb-3">{{ view.kwargs.username  }}</h1> <h5>({{ page_obj.paginator.count }}) </h5> 
-    {% for post in posts%}
-    <article class="media content-section">
-        <img src="{{ post.author.profile.image.url}}" class="rounded-circle article-img">
-        <div class="media-body">
-            <div class="article-metadata">
-                <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
-                <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
+<div class="posts-section ">
+    <div class="content-section" style="padding: 20px;">
+        <div class="row">
+            <div class="col-4">
+                <img class="rounded-circle article-img" src="{{ user.profile.image.url}}" alt=""/>
             </div>
-          <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>
-          <p class="article-content">{{ post.content }}</p>
+            <div class="col-8" style="display: block;margin-top: auto;margin-bottom: auto;">
+                <div class="media-body">
+                  <h2 class="account-heading">{{ user.username }}</h2>
+                  <p class="text-secondary">{{ user.email }}</p>
+                  <h5>Number of blog written : {{posts.count}}</h5>
+                </div>
+              </div>
         </div>
-    </article>
+    </div>
+    {% for post in posts%}
+        <div class="posty content-section">
+            <div class="post-bar">
+                <div class="post_topbar">
+                    <div class="usy-dt">
+                        <!-- user img -->
+                    <img class="rounded-circle article-img" src="{{ post.author.profile.image.url}}" alt=""/>
+                    <div class="usy-name">
+                        <!-- user name -->
+                        <h3><a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a></h3>
+                        <!-- clk img -->
+                        <span><img src="clock.png" alt=""/>{{ post.date_posted|date:"F d, Y" }}</span>
+                    </div>
+                    </div>
+                    <!-- dropdown -->
+                    {% if post.author == user %}
+                    <div class="dropdown edit">
+                        <button class="btn btn-secondary " type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="{% url 'post-update' post.id %}">Edit</a>
+                        <a class="dropdown-item" href="{% url 'post-delete' post.id %}">Delete</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="job_descp">
+                {% if post.images %}
+                <div class="row">
+                    <div class="col-3"></div>
+                    <img class="images"  src="{{ post.images.url }}">                            
+                </div>
+                {% endif %}
+                <br>
+                <p>
+                {{post.content}}                        
+                </p>
+
+            </div>
+            <div class="job-status-bar">
+                <ul class="like-com">
+                <li>
+                  
+                            {% if user not in post.like.all %}
+                        
+                                <button type="submit" class="like" id="like{{post.id}}" name="post_id" value="{{ post.id }}"><i class="fas fa-heart"></i> Like</button>   <img src="liked-img.png" alt=""/><span class="number_of_like{{post.id}}">{{ post.like.all.count }} </span>
+                            {% else %}
+                                <button type="submit" class="like active" id="like{{post.id}}"  name="post_id" value="{{ post.id }}"><i class="fas fa-heart"></i> Like</button>  <img src="liked-img.png" alt=""/><span class="number_of_like{{post.id}}">{{ post.like.all.count }}  </span>
+                            {% endif %}
+                </li>
+                <li>
+                    <button id="{{forloop.counter}}" class="com comment_text{{post.id}}" onclick="showComment(this.id)"> <i class="fas fa-comment-alt"></i>Comment {{post.comments.all.count}}</button>
+                </li>
+                </ul>
+            </div>
+        </div>
+        <div class="comment-section" id="comment{{forloop.counter}}" style="display: none;">
+            <div class="comment-sec" >
+                <ul id="add comment{{post.id}}">
+                <li>
+                    <!-- Each comment -->
+                    {%for comment in post.comments.all %}
+                    <div class="comment-list" >
+                        <div class=" ">
+                            <img src="{{ comment.user.profile.image.url}}" class="rounded-circle comment-img" alt=""/>
+                        </div>
+                        <div class="comment">
+                            <h3><a href="{% url 'user-posts' comment.user.username %}">{{ comment.user }}</a></h3>
+                            <span><img src="clock.png" alt=""/>{{ comment.date_added|date:"F d, Y" }}</span>
+                            <p>{{comment.body}}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </li>
+
+                </ul>
+            </div>
+            <!-- comment box -->
+            <div class="post-comment">
+                <div class="cm_img">
+                <img src="bg-img4.png"alt=""/>
+                </div>
+                <div class="comment_box">
+                    <!-- action="{% url 'comments' %}" -->
+                    <div id="comment_sec">
+                        <form action="{% url 'comments' %}" method="POST" id="comment_form" data-attr="{{post.id}}">
+                            <!-- {% csrf_token %}
+                            {{ comment_form.body }} -->
+                            <input id="id_body" type="text" placeholder="Comment">
+                            <button id="comment-button" type="submit" name="comment_id" value="{{ post.id }}">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     {% endfor %}
-    {% if is_paginated %}
-        {% if page_obj.has_previous %}
-            <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
-            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number}}"><</a>
-        {% endif%}
+</div>
+{% if is_paginated %}
+    {% if page_obj.has_previous %}
+        <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number}}"><</a>
+    {% endif%}
 
-        {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-                <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
-            {% endif %}
-        {% endfor %}
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
 
-        {% if page_obj.has_next %}
-            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">></a>
-            <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-        {% endif%}
+    {% if page_obj.has_next %}
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">></a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+    {% endif%}
 
-    {% endif %}
+{% endif %}
 {% endblock content %}
+{% block js%}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous"></script>
+    <script>
+        $('.like').click(function(){
+            var id = $(this).attr('value')
+            $.ajax({
+                    type: "POST",
+                    url: "{% url 'like_main_post' %}",
+                    data: {'id': id,'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                    dataType: "json",
+                    success: function(response) {
+                        console.log("yeahhh")
+                        if(response.is_like){
+                            console.log(id);
+                            $('#like'+id).addClass("active");
+                            $('.number_of_like'+id).text(response.likes_count);
+                        }else{
+                            // console.log($('#like'+id))
+                            $('#like'+id).removeClass("active");
+                            $('.number_of_like'+id).text(response.likes_count);
+                        }
+                            console.log('Company likes count is now ' + response.likes_count);
+                        },
+                        error: function(rs, e) {
+                            console.log(rs.responseText);
+                        }
+                }); 
+            })
+
+        function showComment(button_id) {
+            var x = document.getElementById("comment"+button_id);
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+        
+        $('#comment_form').submit(function(e){
+            e.preventDefault();
+            $.ajax({
+                type:"POST",
+                url: "{% url 'comments' %}",
+                data: {
+                    'post_id':$(e.target).data('attr'),
+                    'datas':$('#id_body').val(),
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                dataType: "json",
+                success: function(response) {
+                    addComment(response.username,response.image,response.body,response.date,$(e.target).data('attr'))
+                    $('#id_body').val('')
+                    $('.comment_text'+$(e.target).data('attr')).text('Comment '+response.number_of_comments)
+                    },
+                error: function(rs, e) {
+                    console.log(rs.responseText);
+                }
+            });
+        })
+
+        function addComment(username,image,body,postDate,id){
+            main = document.getElementById('add comment'+id)
+
+            var li = document.createElement('li');
+            var mainDiv = document.createElement('div');
+            mainDiv.classList.add('comment-list');
+            
+            var imgDiv = document.createElement('div');
+            var img = document.createElement('img');
+            img.setAttribute('src',image);
+            img.classList.add('rounded-circle');
+            img.classList.add('comment-img');
+            
+            imgDiv.appendChild(img);
+            
+            var cmdDiv = document.createElement('div');
+            cmdDiv.classList.add('comment');
+
+            var h3tag = document.createElement('h3')
+            var atag = document.createElement('a');
+            atag.href = '/user/'+username
+            atag.innerHTML = username
+
+            h3tag.appendChild(atag);
+
+            var spanTag = document.createElement('span')
+            let dt = moment(postDate, "YYYY-MM-DD");
+            
+            spanTag.innerHTML = dt.format('LL')
+
+            var pTag = document.createElement('p');
+            pTag.innerHTML = body
+
+            cmdDiv.appendChild(h3tag)
+            cmdDiv.appendChild(spanTag)
+            cmdDiv.appendChild(pTag)
+            
+            mainDiv.appendChild(imgDiv)
+            mainDiv.appendChild(cmdDiv)
+
+            li.appendChild(mainDiv)
+            main.appendChild(li)
+        }
+    </script>
+{% endblock js%}
+
+
+
