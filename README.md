@@ -22,3 +22,7 @@
     python manage.py makemigrations
     python manage.py migrate
   ```
+  
+  ```python
+   python manage.py runserver
+ ```
