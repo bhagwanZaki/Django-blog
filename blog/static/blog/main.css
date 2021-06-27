@@ -25,6 +25,12 @@ background-color: #236591;
 
     margin: 0px 20px 60px;
 }
+
+@media(max-width:450px){
+    .navbar{
+        padding: 10px 10px;
+    }
+}
 .site-header .navbar-nav .nav-link {
 color: #cbd5db;
 }

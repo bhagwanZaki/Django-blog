@@ -17,8 +17,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'blog/main.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'blog/style.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'blog/responsive.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'blog/slick.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'blog/slick-theme.css' %}">
+    
 
     {% if title %}
         <title>FLoran Blog - {{ title }}</title>
@@ -49,7 +48,7 @@
                   <img src="{{ user.profile.image.url}}" class="rounded-circle profile-img">
                 </a>
                 <ul class="dropdown-menu dropdown-menu-left" aria-labelledby="navbarDropdown">
-                  <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+                  <li><a class="dropdown-item" href="{% url 'user-posts' user.username %}">Profile</a></li>
                   <li><hr class="dropdown-divider"></li>
                   <li><a class="dropdown-item" href="{% url 'logout' %}">Sign Out</a></li>
                 </ul>
